@@ -24,31 +24,40 @@ public class UserService {
     private ValidationUser validationUser;
 
     @Transactional
-    public ResponseEntity<ResponseApi<User>> createUser(UserDto data){
+    public ResponseEntity<ResponseApi<User>> createUser(UserDto data) {
         ResponseEntity<ResponseApi<User>> validateResponse = validationUser.validationUserDto(data);
-        if(!validateResponse.getBody().isSuccess()){
+        if (!validateResponse.getBody().isSuccess()) {
             return validateResponse;
+        }
+        List<User> nameUserRegistered = findByName(data.name());
+        if (nameUserRegistered != null) {
+            return ResponseApi.error("Esse name de usuario ja existe no banco de dados!");
         }
         User newUser = new User(data);
         this.userRepositori.save(newUser);
         return ResponseApi.success("Usuário cadastrado com sucesso!", newUser);
     }
 
-    public Optional<User> findById(Long id){
+    public List<User> findByName(String name) {
+        List<User> user = this.userRepositori.findByName(name);
+        return user;
+    }
+
+    public Optional<User> findById(Long id) {
         Optional<User> user = this.userRepositori.findById(id);
         return user;
     }
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         List<User> listUsers = this.userRepositori.findAll();
         return listUsers;
     }
 
-    public ResponseEntity<ResponseApi<User>> updateUser(UserDto data, Long id){
+    public ResponseEntity<ResponseApi<User>> updateUser(UserDto data, Long id) {
 
         Optional<User> existUserOptional = userRepositori.findById(id);
         ResponseEntity<ResponseApi<User>> validateResponse = validationUser.validationUserDto(data);
-        if(!validateResponse.getBody().isSuccess()){
+        if (!validateResponse.getBody().isSuccess()) {
             return validateResponse;
         }
         if (existUserOptional.isPresent()) {
@@ -56,7 +65,7 @@ public class UserService {
             existUser.setName(data.name());
             existUser.setEmail(data.email());
             existUser.setPassword(data.password());
-            if(existUser.getUserType() != data.userType()){
+            if (existUser.getUserType() != data.userType()) {
                 return ResponseApi.error("Não pode alterar o tipo de usuario");
             }
             this.userRepositori.save(existUser);
@@ -66,7 +75,7 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<ResponseApi<User>> deleteUser(Long id){
+    public ResponseEntity<ResponseApi<User>> deleteUser(Long id) {
         Optional<User> existUserOptional = userRepositori.findById(id);
         if (existUserOptional.isPresent()) {
             this.userRepositori.deleteById(id);
