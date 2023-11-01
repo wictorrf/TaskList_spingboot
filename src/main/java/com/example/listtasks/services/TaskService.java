@@ -16,8 +16,8 @@ import com.example.listtasks.services.validations.ResponseApi;
 import com.example.listtasks.services.validations.ValidationTask;
 
 @Service
-public class TaskSercvice {
-    
+public class TaskService {
+
     @Autowired
     private TaskRepository taskRepository;
 
@@ -27,14 +27,14 @@ public class TaskSercvice {
     @Autowired
     private ValidationTask validationTask;
 
-    public ResponseEntity<ResponseApi<Task>> createTask(TaskDto data){
+    public ResponseEntity<ResponseApi<Task>> createTask(TaskDto data) {
 
         Optional<User> existUser = this.userService.findById(data.id());
-        if(!existUser.isPresent()){
+        if (!existUser.isPresent()) {
             return ResponseApi.error("Usuário não encontrado!");
         }
         ResponseEntity<ResponseApi<Task>> validateResponses = validationTask.validationTaskDto(data);
-        if(!validateResponses.getBody().isSuccess()){
+        if (!validateResponses.getBody().isSuccess()) {
             return validateResponses;
         }
 
@@ -48,7 +48,7 @@ public class TaskSercvice {
         return ResponseApi.success("Tarefa criada com sucesso", newTask);
     }
 
-    public List<Task> getAllTask(){
+    public List<Task> getAllTask() {
         List<Task> listTasks = this.taskRepository.findAll();
         return listTasks;
     }

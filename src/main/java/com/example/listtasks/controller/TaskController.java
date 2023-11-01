@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.listtasks.domains.Task;
 import com.example.listtasks.dtos.TaskDto;
-import com.example.listtasks.services.TaskSercvice;
+import com.example.listtasks.services.TaskService;
 import com.example.listtasks.services.validations.ResponseApi;
 
 import jakarta.validation.Valid;
@@ -21,14 +21,14 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
-    
+
     @Autowired
-    private TaskSercvice taskSercvice;
+    private TaskService taskService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseApi<Task>> createTask(@RequestBody @Valid TaskDto data){
+    public ResponseEntity<ResponseApi<Task>> createTask(@RequestBody @Valid TaskDto data) {
         try {
-            return this.taskSercvice.createTask(data);
+            return this.taskService.createTask(data);
         } catch (Exception e) {
             String errorMessage = e.getMessage();
             return ResponseEntity.badRequest().body(new ResponseApi<>(false, errorMessage, null));
@@ -36,8 +36,8 @@ public class TaskController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Task>> getAllTasks(){
-        List<Task> listTasks = this.taskSercvice.getAllTask();
+    public ResponseEntity<List<Task>> getAllTasks() {
+        List<Task> listTasks = this.taskService.getAllTask();
         return ResponseEntity.status(HttpStatus.OK).body(listTasks);
     }
 }

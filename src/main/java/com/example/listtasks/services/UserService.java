@@ -8,11 +8,12 @@ import com.example.listtasks.services.validations.ValidationUser;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -29,17 +30,18 @@ public class UserService {
         if (!validateResponse.getBody().isSuccess()) {
             return validateResponse;
         }
-        List<User> nameUserRegistered = findByName(data.name());
+        UserDetails nameUserRegistered = findByName(data.name());
         if (nameUserRegistered != null) {
             return ResponseApi.error("Esse name de usuario ja existe no banco de dados!");
         }
-        User newUser = new User(data);
+        String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
+        User newUser = new User(data.name(), data.email(), encryptedPassword, data.userRole());
         this.userRepositori.save(newUser);
         return ResponseApi.success("Usuário cadastrado com sucesso!", newUser);
     }
 
-    public List<User> findByName(String name) {
-        List<User> user = this.userRepositori.findByName(name);
+    public UserDetails findByName(String name) {
+        UserDetails user = this.userRepositori.findByName(name);
         return user;
     }
 
@@ -65,7 +67,7 @@ public class UserService {
             existUser.setName(data.name());
             existUser.setEmail(data.email());
             existUser.setPassword(data.password());
-            if (existUser.getUserType() != data.userType()) {
+            if (existUser.getUserRole() != data.userRole()) {
                 return ResponseApi.error("Não pode alterar o tipo de usuario");
             }
             this.userRepositori.save(existUser);
